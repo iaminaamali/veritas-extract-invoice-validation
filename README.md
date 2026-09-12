@@ -4,6 +4,8 @@ Veritas Extract is a small FastAPI service that turns PDF invoices into structur
 
 ## What it does
 
+![Veritas Extract Architecture](screenshots/architecture.png)
+
 ```text
 PDF
  │
@@ -34,8 +36,6 @@ Rule-based confidence
           ▼
       PostgreSQL
 ```
-
-![Architecture diagram](veritas-extract---screenshots/architecture.png)
 
 The idea here isn't to make the LLM responsible for everything. It handles the messy part — reading the invoice and pulling out fields — and the application code takes over for anything that should behave predictably.
 
@@ -146,7 +146,7 @@ uvicorn app.main:app --reload
 
 Open `http://127.0.0.1:8000/docs` for the interactive API docs.
 
-![Swagger UI](veritas-extract---screenshots/swaggerui.png)
+![Swagger UI](screenshots/swaggerui.png)
 
 ## Run everything with Docker
 
@@ -178,11 +178,11 @@ curl -X POST "http://127.0.0.1:8000/extract" \
 
 A successful response includes the extracted invoice, the validation result, a confidence score, how many extraction attempts it took, and the database id.
 
-![Successful extraction result](veritas-extract---screenshots/extraction-result.png)
+![Extraction Result](screenshots/extraction-result.png)
 
 When confidence comes in below the threshold, the invoice is still saved, but it's marked for review instead of being validated outright:
 
-![Invoice flagged for human review](veritas-extract---screenshots/review-flow.png)
+![Human Review Flow](screenshots/review-flow.png)
 
 ### `GET /review/{invoice_id}`
 
@@ -212,7 +212,7 @@ Anything below `CONFIDENCE_THRESHOLD` gets marked `NEEDS_REVIEW`. An invoice tha
 
 Here's what the stored data actually looks like in Postgres, including the confidence score and status columns:
 
-![Database record](veritas-extract---screenshots/database.png)
+![PostgreSQL Record](screenshots/database.png)
 
 ## Tests
 
