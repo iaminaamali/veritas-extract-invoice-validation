@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16
+    container_name: veritas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-veritas_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-veritas_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-veritas_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-veritas_user} -d ${POSTGRES_DB:-veritas_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: veritas-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-nano}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-veritas_user}:${POSTGRES_PASSWORD:-veritas_dev_password}@db:5432/${POSTGRES_DB:-veritas_db}
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.90}
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-10}
+      MAX_EXTRACTION_ATTEMPTS: ${MAX_EXTRACTION_ATTEMPTS:-3}
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  postgres_data:
+  uploads_data:
